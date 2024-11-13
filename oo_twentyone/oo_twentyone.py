@@ -279,7 +279,7 @@ or stay (end your turn).',
     def continue_or_start():
         while True:
             response = input("Press Enter to continue or \
-                             enter 'S' to start the game:  ")
+enter 'S' to start the game:  ")
             print("\033[F\033[K", end='')
             flush_print()
             pause()
@@ -299,13 +299,13 @@ or stay (end your turn).',
     @classmethod
     def display_all_rules(cls):
         response = cls.display_game_rules()
+        transition()
         if response == 'start':
-            transition()
             return None
 
         response = cls.display_card_values()
+        transition()
         if response == 'start':
-            transition()
             return None
 
         cls.display_gambling_rules()
