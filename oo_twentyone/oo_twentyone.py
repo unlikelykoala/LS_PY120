@@ -26,18 +26,19 @@ def transition(seconds=0.3):
 
 def flush_print():
     sys.stdout.flush()
-    
+
 def join_and(lst):
     lst = [str(ele) for ele in lst]
     if len(lst) == 1:
         return f'{lst[0]}.'
-    elif len(lst) == 2:
+    if len(lst) == 2:
         return f'{lst[0]} and {lst[1]}.'
-    else:
-        return ', '.join(lst[:-1]) + f', and {lst[-1]}.'
+
+    return ', '.join(lst[:-1]) + f', and {lst[-1]}.'
 
 class Card:
-    RANKS_AND_POINTS = {str(i):i for i in range(2,11)} | {'jack': 10, 'queen': 10, 'king': 10, 'ace': 11}
+    RANKS_AND_POINTS = ({str(i):i for i in range(2,11)} |
+    {'jack': 10, 'queen': 10, 'king': 10, 'ace': 11})
     SUITS = {'hearts', 'clubs', 'spades', 'diamonds'}
 
     def __init__(self, suit, rank, points):
@@ -48,7 +49,7 @@ class Card:
     @property
     def rank(self):
         return self._rank
-    
+
     @rank.setter
     def rank(self, rank):
         self._rank = rank
@@ -56,7 +57,7 @@ class Card:
     @property
     def suit(self):
         return self._suit
-    
+
     @suit.setter
     def suit(self, suit):
         self._suit = suit
@@ -64,25 +65,25 @@ class Card:
     @property
     def points(self):
         return self._points
-    
+
     @points.setter
     def points(self, points):
         self._points = points
-    
+
     def __str__(self):
         if self.rank.startswith(('8', 'a')):
             return f'an {self.rank} of {self.suit}'
-        else:
-            return f'a {self.rank} of {self.suit}'
 
-class Deck:  
+        return f'a {self.rank} of {self.suit}'
+
+class Deck:
     def __init__(self):
         self.cards = self._generate_deck()
 
     @property
     def cards(self):
         return self._cards
-    
+
     @cards.setter
     def cards(self, cards):
         self._cards = cards
@@ -90,12 +91,12 @@ class Deck:
     def deal_1_card(self):
         if not self.cards:
             self.cards = self._generate_deck()
-        
+
         return self.cards.pop()
 
     def _generate_deck(self):
         new_deck = [Card(suit, rank, points) for suit in Card.SUITS
-                                              for rank, points in Card.RANKS_AND_POINTS.items()]
+                        for rank, points in Card.RANKS_AND_POINTS.items()]
         random.shuffle(new_deck)
         return new_deck
 
@@ -103,16 +104,16 @@ class Participant:
     def __init__(self):
         self.hand = []
         self.dollars = 5
-    
+
     def add_card(self, card):
         self.hand.append(card)
-    
+
     def discard_hand(self):
         self.hand.clear()
 
     def decrement_dollars(self, loss=1):
         self.dollars -= loss
-    
+
     def increment_dollars(self, gain=1):
         self.dollars += gain
 
@@ -120,7 +121,7 @@ class Participant:
         print(f'You have ${self.dollars}.')
         print()
         enter_to_clear()
-    
+
     def is_busted(self):
         return self.points() > TwentyOneGame.MAX_SCORE
 
@@ -132,7 +133,7 @@ class Participant:
             points += card.points
             if card.rank == 'ace':
                 aces += 1
-        
+
         while points > TwentyOneGame.MAX_SCORE and aces:
             points -= 10
             aces -= 1
@@ -143,7 +144,7 @@ class Player(Participant):
     STARTING_PURSE = 5
     WIN_PURSE = 10
     LOSE_PURSE = 0
-    
+
     def __init__(self):
         super().__init__()
         self.dollars = Player.STARTING_PURSE
@@ -151,22 +152,22 @@ class Player(Participant):
     @property
     def dollars(self):
         return self._dollars
-    
+
     @dollars.setter
     def dollars(self, new):
         self._dollars = new
-    
+
     def is_broke(self):
         return self.dollars == Player.LOSE_PURSE
-    
+
     def is_rich(self):
         return self.dollars == Player.WIN_PURSE
-    
+
     def bust(self):
         print('Oh no! You busted!')
         print()
         enter_to_clear()
-    
+
     def show_hand(self):
         print('You have: ', end='')
         print(join_and(self.hand))
@@ -199,15 +200,15 @@ class Dealer(Participant):
         print('The dealer busted!')
         print()
         enter_to_clear()
-    
-    def hit_messsage(self):
+
+    def hit_message(self):
         print('The dealer hits.')
         print()
         enter_to_clear()
 
     def stay(self):
         return self.points() > Dealer.STAY_SCORE
-    
+
     def stay_message(self):
         print('The dealer stays.')
         print()
@@ -218,7 +219,7 @@ class Dealer(Participant):
         print(join_and(self.hand))
         print()
         pause()
-    
+
     def show_hidden_hand(self):
         print('The dealer has: ', end='')
         hidden_cards = len(self.hand) - 1
@@ -267,7 +268,7 @@ or stay (end your turn).',
     "4. If both you and the dealer stay, then you compare hands.\n\
     - The highest score wins.",
 ]
-    
+
     GAMBLING_RULES = [
         '1. You will start with $5.',
         '2. If you win a round, you get $1. If you lose, you lose $1.',
@@ -277,7 +278,8 @@ or stay (end your turn).',
     @staticmethod
     def continue_or_start():
         while True:
-            response = input("Press Enter to continue or enter 'S' to start the game:  ")
+            response = input("Press Enter to continue or \
+                             enter 'S' to start the game:  ")
             print("\033[F\033[K", end='')
             flush_print()
             pause()
@@ -285,30 +287,30 @@ or stay (end your turn).',
             if response.casefold().startswith(('s', 'start')):
                 return 'start'
 
-            elif not response:
-                return None
-            
-            else:
-                print("\033[F\033[K", end='')
-                flush_print()
-                pause()
-                print('Invalid Input. Try again.')
-                print()
-    
+            if not response:
+                return 'continue'
+
+            print("\033[F\033[K", end='')
+            flush_print()
+            pause()
+            print('Invalid Input. Try again.')
+            print()
+
     @classmethod
     def display_all_rules(cls):
         response = cls.display_game_rules()
         if response == 'start':
             transition()
             return None
-        
+
         response = cls.display_card_values()
         if response == 'start':
             transition()
             return None
 
         cls.display_gambling_rules()
-    
+        return None
+
     @classmethod
     def display_card_values(cls):
         print('The card values are as follows: ')
@@ -320,7 +322,11 @@ or stay (end your turn).',
             print(rule)
 
         print()
-        cls.continue_or_start()
+        response = cls.continue_or_start()
+        if response == 'start':
+            return 'start'
+
+        return 'continue'
 
     @classmethod
     def display_game_rules(cls):
@@ -333,7 +339,11 @@ or stay (end your turn).',
             print(rule)
 
         print()
-        cls.continue_or_start()
+        response = cls.continue_or_start()
+        if response == 'start':
+            return 'start'
+
+        return 'continue'
 
     @classmethod
     def display_gambling_rules(cls):
@@ -347,10 +357,11 @@ or stay (end your turn).',
 
         print()
         enter_to_clear(message="Press 'Enter' to start the game)")
+        return None
 
 class TwentyOneGame:
     MAX_SCORE = 21
-    
+
     def __init__(self):
         self._deck = Deck()
         self._player = Player()
@@ -376,8 +387,7 @@ class TwentyOneGame:
     def outro(self):
         self.display_match_result()
         self.display_goodbye_message()
-        pass
-    
+
     def deal_cards(self):
         for _ in range(2):
             self._player.add_card(self._deck.deal_1_card())
@@ -399,7 +409,7 @@ class TwentyOneGame:
             if response.casefold() in ['y', 'n']:
                 transition()
                 return response.casefold() == 'y'
-            
+
             transition()
             print('Invalid response. Try again.')
             print()
@@ -407,9 +417,9 @@ class TwentyOneGame:
     def _player_turn(self):
         while True:
             self.show_cards_hidden()
-            
+
             self._player.show_points()
-            
+
             if self._player.is_busted():
                 self._player.bust()
                 break
@@ -421,7 +431,7 @@ class TwentyOneGame:
             transition()
             self._hit(self._player)
             self._player.show_new_card()
-        
+
     def _dealer_turn(self):
         while True:
             self._dealer.show_new_card()
@@ -437,7 +447,7 @@ class TwentyOneGame:
 
             self._hit(self._dealer)
             self._dealer.hit_message()
-    
+
     def _update_dollars(self):
         winner = self._get_winner()
 
@@ -445,19 +455,19 @@ class TwentyOneGame:
             self._player.increment_dollars()
         elif winner == self._dealer:
             self._player.decrement_dollars()
-    
+
     def _compare_hands(self):
         if self._player.points() > self._dealer.points():
             return self._player
         if self._player.points() < self._dealer.points():
             return self._dealer
-        
+
         return 'tie'
-    
+
     def discard_hands(self):
         self._player.discard_hand()
         self._dealer.discard_hand()
-    
+
     def display_welcome_message(self):
         transition()
         print('Welcome to Object-Oriented Twenty-One!')
@@ -512,9 +522,9 @@ class TwentyOneGame:
             return self._dealer
         if self._dealer.is_busted():
             return self._player
-        else:
-            return self._compare_hands()
-    
+
+        return self._compare_hands()
+
     def _hit(self, participant):
         card = self._deck.deal_1_card()
         participant.add_card(card)
@@ -538,10 +548,10 @@ class TwentyOneGame:
 
     def match_over(self):
         return self._player.is_broke() or self._player.is_rich()
-    
+
     def play_round(self):
         self.discard_hands()
-        
+
         self.deal_cards()
 
         self._player_turn()
@@ -560,11 +570,11 @@ class TwentyOneGame:
             if response.casefold() in ['y', 'n']:
                 transition()
                 return response.casefold() == 'y'
-            
+
             transition()
             print('Invalid response. Try again.')
             print()
-        
+
 
 
 game = TwentyOneGame()
